@@ -7,7 +7,7 @@
   int R_dir = 8;
   int L_dir = 12;
   
- const int MIN_THROTTLE = 1250, MAX_THROTTLE = 1800;
+ const int MIN_THROTTLE = 1250, MAX_THROTTLE = 1830;
  const int MIN_STEERING = 1100, MAX_STEERING = 1850;
  const int THROTTLE_DEAD_ZONE = 50;
  const int STEERING_DEAD_ZONE = 20;
@@ -57,11 +57,20 @@
       int pwmSpeed = map(throttlePosition, throttleHalfway + THROTTLE_DEAD_ZONE, MAX_THROTTLE, 0, 255);
 
       if (isTurning){
-        
-      } else {
+        if (isTurningRight(steeringPosition)){
+          int reductionFactor = map(steeringPosition, steeringHalfway + STEERING_DEAD_ZONE, MAX_STEERING, 0, 100);
+          int rigtDeaceleration = map(reductionFactor, 0, 100, 0, pwmSpeed);
+          forward(correctPWM(pwmSpeed), 0, rigtDeaceleration);
+        }
+        else {
+          int reductionFactor = map(steeringPosition, MIN_STEERING, steeringHalfway - STEERING_DEAD_ZONE, 100, 0);
+          int leftDeaceleration = map(reductionFactor, 0, 100, 0, pwmSpeed);
+          forward(correctPWM(pwmSpeed), leftDeaceleration, 0);
+        }
+      } 
+      else {
         forward(correctPWM(pwmSpeed), 0, 0);
-      }
-             
+      }    
     } 
     
     else if ((throttlePosition < throttleHalfway - THROTTLE_DEAD_ZONE)) {
@@ -69,17 +78,27 @@
       int pwmSpeed = map(throttlePosition, MIN_THROTTLE, throttleHalfway - THROTTLE_DEAD_ZONE, 255, 0);
 
       if (isTurning){
-        
-      } else {
+        if (isTurningRight(steeringPosition)){
+          int reductionFactor = map(steeringPosition, steeringHalfway + STEERING_DEAD_ZONE, MAX_STEERING, 0, 100);
+          int rigtDeaceleration = map(reductionFactor, 0, 100, 0, pwmSpeed);
+          backward(correctPWM(pwmSpeed), 0, rigtDeaceleration);
+        }
+        else {
+          int reductionFactor = map(steeringPosition, MIN_STEERING, steeringHalfway - STEERING_DEAD_ZONE, 100, 0);
+          int leftDeaceleration = map(reductionFactor, 0, 100, 0, pwmSpeed);
+          backward(correctPWM(pwmSpeed), leftDeaceleration, 0);
+        }
+      } 
+      else {
         backward(correctPWM(pwmSpeed), 0, 0);
-      }
+      }    
     }
 
     //TURN IN ITS AXIS
     else if (isTurning && !isReving){
       
       // CHECK WHICH WAY IS TURNING
-      if ((steeringPosition > steeringHalfway + STEERING_DEAD_ZONE)) {
+      if (isTurningRight(steeringPosition)) {
         //RIGHT
         int pwmSpeed = map(steeringPosition, steeringHalfway + STEERING_DEAD_ZONE, MAX_STEERING, 0, 255);
         right(correctPWM(pwmSpeed));
@@ -115,15 +134,15 @@
   void forward(unsigned int pwm, int decelerationL, int decelerationR){
     digitalWrite(R_dir,LOW); 
     digitalWrite(L_dir,LOW);
-    analogWrite(RightMotor, pwm - decelerationR);
-    analogWrite(LeftMotor, pwm - decelerationL);
+    analogWrite(RightMotor, correctPWM(pwm - decelerationR));
+    analogWrite(LeftMotor, correctPWM(pwm - decelerationL));
   }
     
   void backward(unsigned int pwm, int decelerationL, int decelerationR){
     digitalWrite(R_dir,HIGH);
     digitalWrite(L_dir,HIGH);
-    analogWrite(RightMotor,pwm);
-    analogWrite(LeftMotor,pwm);
+    analogWrite(RightMotor,correctPWM(pwm - decelerationR));
+    analogWrite(LeftMotor,correctPWM(pwm - decelerationL));
   }
    
   void left(unsigned int pwm){
