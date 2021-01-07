@@ -7,10 +7,10 @@
   int R_dir = 8;
   int L_dir = 12;
   
- const int MIN_THROTTLE = 1250, MAX_THROTTLE = 1830;
- const int MIN_STEERING = 1100, MAX_STEERING = 1850;
- const int THROTTLE_DEAD_ZONE = 50;
- const int STEERING_DEAD_ZONE = 20;
+ const int MIN_THROTTLE = 1206, MAX_THROTTLE = 1830;
+ const int MIN_STEERING = 1189, MAX_STEERING = 1885;
+ const int THROTTLE_DEAD_ZONE = 30;
+ const int STEERING_DEAD_ZONE = 50;
   
  int throttleHalfway = (MIN_THROTTLE + MAX_THROTTLE) / 2;
  int steeringHalfway = (MIN_STEERING + MAX_STEERING) / 2;
@@ -31,7 +31,7 @@
   }
 
   void loop() {
-
+    
     //CHECK IF IS RECEIVING SIGNAL
     if (pulseIn(throttle, HIGH) == 0 || pulseIn(steering, HIGH) == 0){
       stopMotors();
